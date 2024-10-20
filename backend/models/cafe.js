@@ -14,7 +14,7 @@ const cafeSchema = mongoose.Schema({
     },
     logo: {
         type: String,
-        required: true
+        // required: true
     },
     location: {
         type: String,
