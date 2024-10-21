@@ -24,6 +24,6 @@ export const deleteEmployee = async (employeeId) => {
 // Additional API
 
 export const fetchEmployeesByCafe = async (cafe) => {
-  const { data } = await axiosInstance.get(`/employee?cafe=${cafe}`);
+  const { data } = await axiosInstance.get(`/employee/?cafeName=${cafe}`);
   return data;
 };

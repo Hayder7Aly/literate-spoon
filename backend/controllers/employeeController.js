@@ -16,21 +16,15 @@ function generateEmployeeId() {
 
 // Get all employees, optionally filtered by cafeId
 const getAllEmployees = async (req, res) => {
-    const cafeId = req.query.cafeId; // Extract cafeId from query parameters
+    const cafeName = req.query.cafeName; // Extract cafeName from query parameters
     try {
-        let match = {}; // Match condition for aggregation
-        if (cafeId) {
-            match = { cafeId }; // Add cafeId to match condition if provided
-        }
-
         const employees = await Employee.aggregate([
             {
                 $lookup: { // Join with employeeCafeAssignments
                     from: "employeecafeassignments",
                     let: { employeeId: "$employeeId" },
                     pipeline: [
-                        { $match: { $expr: { $eq: ["$employeeId", "$$employeeId"] } } },
-                        { $match: match }
+                        { $match: { $expr: { $eq: ["$employeeId", "$$employeeId"] } } }
                     ],
                     as: "assignments"
                 }
@@ -45,9 +39,8 @@ const getAllEmployees = async (req, res) => {
                 }
             },
             { $unwind: { path: "$cafeDetails", preserveNullAndEmptyArrays: true } }, // Flatten cafe details
-            {
-                $match: cafeId ? { "assignments.cafeId": cafeId } : {} // Filter by cafeId if provided
-            },
+            // Conditional matching based on cafeName if provided, using a regex for partial matching
+            ...(cafeName ? [{ $match: { "cafeDetails.name": { $regex: cafeName, $options: "i" } } }] : []),
             {
                 $project: { // Specify fields to include in the output
                     _id: 0,
@@ -81,6 +74,7 @@ const getAllEmployees = async (req, res) => {
         res.status(500).json({ error: error.message }); // Handle errors
     }
 };
+
 
 // Create a new employee
 const createEmployee = async (req, res) => {
@@ -180,6 +174,10 @@ const deleteEmployee = async (req, res) => {
         res.status(500).json({ error: error.message }); // Handle errors
     }
 };
+
+
+
+
 
 // Export controller functions for use in routes
 module.exports = {

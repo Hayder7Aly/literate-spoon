@@ -1,8 +1,8 @@
 import React from 'react';
 
-const SearchInput = ({ value, onChange, handleSearchLocation, placeholder }) => {
+const SearchInput = ({ value, onChange, placeholder }) => {
   return (
-    <form className="flex items-center max-w-sm" onSubmit={handleSearchLocation}>
+    <div className="flex items-center max-w-sm" >
       <label htmlFor="simple-search" className="sr-only">Search</label>
       <div className="relative w-full">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -33,7 +33,7 @@ const SearchInput = ({ value, onChange, handleSearchLocation, placeholder }) => 
         />
         
       </div>
-    </form>
+    </div>
   );
 };
 

@@ -5,8 +5,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
 import EditDelete from "../components/elements/EditDeleteAgGroup";
 import Button from "../components/elements/Button";
 import AddEditEmployee from "../components/AddEditEmployee";
+import SearchInput from "../components/elements/SearchInput";
 import DeleteDialogBox from "../components/elements/Dialog";
-import { fetchEmployees, addEmployee, updateEmployee, deleteEmployee } from '../services/employeeServices';
+import { fetchEmployees, addEmployee, updateEmployee, deleteEmployee,fetchEmployeesByCafe } from '../services/employeeServices';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Employees = () => {
@@ -15,7 +16,9 @@ const Employees = () => {
   const [modalOpen, setModalOpen] = useState(false); // Control modal visibility
   const [openDialog, setOpenDialog] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null); // For delete dialog
-  
+  const [searchByCafe, setSearchByCafe] = useState("");
+
+
   const queryClient = useQueryClient();
   
   // Fetch employees using useQuery
@@ -23,6 +26,14 @@ const Employees = () => {
     queryKey: ['employees'],
     queryFn: fetchEmployees,
   });
+
+
+  const { data: employeesByCafe, isLoading: byCafeLoading, refetch, isFetched, isFetching } = useQuery({
+    queryKey: ["employees", { cafe: searchByCafe }],
+    queryFn: () => fetchEmployeesByCafe(searchByCafe),
+    enabled: false,
+  });
+
 
   // Add employee mutation
   const addEmployeeMutation = useMutation({
@@ -113,10 +124,26 @@ const Employees = () => {
   // if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
+  const rowData = !searchByCafe || byCafeLoading ? employees || [] : employeesByCafe || [] ; 
+
+  console.log({byCafeLoading, isFetched, isFetching} , "test")
+
+  const handleChange = (e) => {
+    const value = e.target.value; // Get the current input value
+    setSearchByCafe(value); // Update local input state
+    setTimeout(() => {
+      refetch(); //like this one only runs that time 
+    }, 500);
+  };
   return (
     <>
       <div style={{ height: 400, width: "96%" }} className="ag-theme-alpine mx-auto">
-        <div className="flex flex-row-reverse mb-6">
+        <div className="flex justify-between mb-6">
+        <SearchInput
+          value={searchByCafe}
+          onChange={handleChange} // Capture the value correctly
+          placeholder={"Search by Cafe"}
+        />
           <Button text="Add Employee" variant="secondary" onClick={() => {
               setIsEditMode(false);
               setModalOpen(true);
@@ -124,7 +151,7 @@ const Employees = () => {
           }}/>
         </div>
         <AgGridReact
-          rowData={employees || []} // Use the fetched employee data
+          rowData={rowData} // Use the fetched employee data
           columnDefs={columnDefs}
           domLayout="autoHeight"
           loading={isLoading}

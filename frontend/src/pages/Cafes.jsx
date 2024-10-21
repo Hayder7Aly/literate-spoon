@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -9,6 +9,7 @@ import AddEditCafe from "../components/AddEditCafe";
 import DeleteDialogBox from "../components/elements/Dialog";
 import { fetchCafes, addCafe, updateCafe, deleteCafe, fetchCafesByLocation } from "../services/cafeServices";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {debounce} from "lodash"
 
 const Cafe = () => {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -17,7 +18,6 @@ const Cafe = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [cafeToDelete, setCafeToDelete] = useState(null);
   const [searchLocation, setSearchLocation] = useState("");
-  const [triggeredLocation, setTriggeredLocation] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -26,18 +26,23 @@ const Cafe = () => {
     queryFn: fetchCafes,
   });
 
+
+  // Fetch cafes by location (enabled: false for manual triggering)
   const { data: cafesByLocation, isLoading: bylocationLoading, refetch } = useQuery({
-    queryKey: ["cafes", { location: triggeredLocation }],
-    queryFn: () => fetchCafesByLocation(triggeredLocation),
-    enabled: false,
+    queryKey: ["cafes", { location: searchLocation }], // Include searchLocation in the query key
+    queryFn: () => fetchCafesByLocation(searchLocation), // Pass the location to the fetching function
+    enabled: false, // Disable automatic fetching
   });
 
-  const handleSearchLocation = (e,location) => {
-    e.preventDefault()
-    const trimmedLocation = location.trim(); // Get the trimmed input
-    setTriggeredLocation(trimmedLocation); // Update triggered location
-    refetch(); // Manually trigger the query
+  const handleChange = (e) => {
+    const value = e.target.value; // Get the current input value
+    setSearchLocation(value); // Update local input state
+    setTimeout(() => {
+      refetch(); //like this one only runs that time 
+    }, 500);
   };
+
+
 
   const addCafeMutation = useMutation({
     mutationFn: addCafe,
@@ -118,15 +123,14 @@ const Cafe = () => {
 
   if (error) return <div>Error: {error.message}</div>;
 
-  const rowData = searchLocation && triggeredLocation ? cafesByLocation || [] : cafes || [];
+  const rowData = !searchLocation || bylocationLoading ? cafes || [] : cafesByLocation || [] ;
 
   return (
     <div style={{ height: 400, width: "96%" }} className="ag-theme-alpine mx-auto">
       <div className="flex justify-between items-center mb-6">
         <SearchInput
           value={searchLocation}
-          onChange={(e) => setSearchLocation(e.target.value)} // Capture the value correctly
-          handleSearchLocation={(e) => handleSearchLocation(e,searchLocation)} // Pass the current search location
+          onChange={handleChange} // Capture the value correctly
           placeholder={"Search by Location"}
         />
         <Button
@@ -144,7 +148,7 @@ const Cafe = () => {
         rowData={rowData}
         columnDefs={columnDefs}
         domLayout="autoHeight"
-        loading={isLoading || bylocationLoading}
+        loading={isLoading }
       />
 
       {modalOpen && (

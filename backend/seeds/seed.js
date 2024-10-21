@@ -13,10 +13,10 @@ mongoose.connect(process.env.DB_URL, { useNewUrlParser: true, useUnifiedTopology
 
 // Seed data for cafes and employees
 const cafes = [
-    { cafeId: uuidv4(), name: 'Café Lahore', description: 'Cozy cafe in Lahore.', logo: "", location: 'Lahore' },
+    { cafeId: uuidv4(), name: 'Cafe Lahore', description: 'Cozy cafe in Lahore.', logo: "", location: 'Lahore' },
     { cafeId: uuidv4(), name: 'Tea House Karachi', description: 'A tranquil spot in Karachi for tea lovers.', logo: "", location: 'Karachi' },
     { cafeId: uuidv4(), name: 'Brewed Awakening', description: 'Your local coffee shop in Karachi.', logo: "", location: 'Karachi' },
-    { cafeId: uuidv4(), name: 'Café Islamabad', description: 'A beautiful cafe with a view in Islamabad.', logo: "", location: 'Islamabad' },
+    { cafeId: uuidv4(), name: 'Cafe Islamabad', description: 'A beautiful cafe with a view in Islamabad.', logo: "", location: 'Islamabad' },
     { cafeId: uuidv4(), name: 'Coffee Corner', description: 'A favorite hangout in Lahore.', logo: "", location: 'Lahore' },
 ];
 
